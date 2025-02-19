@@ -29,7 +29,7 @@ searchForm.addEventListener("submit", async (event) => {
     }
     page = 1;
     gallery.innerHTML = "";
-    loadMoreBtn.hidden = true;
+    loadMoreBtn.style.display = "none";
     try {
         const data = await fetchImages(query, page, perPage);
         if (data.hits.length === 0) {
@@ -42,11 +42,12 @@ searchForm.addEventListener("submit", async (event) => {
         }
         gallery.innerHTML = renderImages(data.hits);
         lightbox.refresh();
-        if (data.hits.length === perPage) {
-            // loadMoreBtn.hidden = false;
-            loadMoreBtn.style.display = "block";
-        }
         searchForm.reset();
+        if (data.hits.length < perPage) {
+            loadMoreBtn.style.display = "none";
+        } else {
+            loadMoreBtn.style.display = "block"; 
+        }
     } catch (error) {
         iziToast.error({
             title: "Error",
@@ -57,24 +58,26 @@ searchForm.addEventListener("submit", async (event) => {
 });
 
 loadMoreBtn.addEventListener("click", async () => {
-    page += 1;
+    page ++;
     try {
         const data = await fetchImages(query, page, perPage);
         if (data.hits.length === 0) {
-            loadMoreBtn.hidden = true;
             iziToast.info({
                 title: "Info",
                 message: "No results found. Try another search query!",
                 position: "topRight",
             });
+            loadMoreBtn.style.display = "none";
             return;
         }
         gallery.insertAdjacentHTML("beforeend", renderImages(data.hits));
         lightbox.refresh();
-        const { height: cardHeight } = document.querySelector(".gallery a").getBoundingClientRect();
-        window.scrollBy({ top: cardHeight * 2, behavior: "smooth" });
+        const cardHeight = document.querySelector(".gallery a").getBoundingClientRect().height;
+        window.scrollBy({
+            top: cardHeight * 2,
+            behavior: "smooth"
+        });
         if (page * perPage >= data.totalHits) {
-            // loadMoreBtn.hidden = true;
             loadMoreBtn.style.display = "none";
             iziToast.info({
                 title: "End or collection",
