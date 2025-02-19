@@ -67,3 +67,19 @@ button:hover {
   margin-top: 10px;
   font-size: 14px;
 }
+
+.load-more {
+  display: block;
+  margin: 20px auto;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.load-more:hover {
+  background-color: #0056b3;
+}
