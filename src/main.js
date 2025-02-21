@@ -36,7 +36,7 @@ searchForm.addEventListener("submit", async (event) => {
     gallery.innerHTML = "";
     
     loadMoreBtn.style.display = "none";
-    loader.style.display = "block";
+    loader.style.display = "none";
 
     try {
         const data = await fetchImages(query, page, perPage);
@@ -56,6 +56,7 @@ searchForm.addEventListener("submit", async (event) => {
         
         if (page * perPage < totalHits) {
             loadMoreBtn.style.display = "block";
+            loader.style.display = "block";
         }
     } catch (error) {
         iziToast.error({
@@ -63,15 +64,13 @@ searchForm.addEventListener("submit", async (event) => {
             message: "Something went wrong! Please try again.",
             position: "topRight",
         });
-    } finally {
-        loader.style.display = "none";
-    }
+    } 
 });
 
 loadMoreBtn.addEventListener("click", async () => {
     page++;
     loadMoreBtn.style.display = "none";
-    loader.style.display = "block";
+    loader.style.display = "none";
     try {
         const data = await fetchImages(query, page, perPage);
         if (data.hits.length === 0) {
@@ -99,8 +98,10 @@ loadMoreBtn.addEventListener("click", async () => {
                 position: "topRight",
             });
             loadMoreBtn.style.display = "none";
+            loader.style.display = "none";
         } else {
             loadMoreBtn.style.display = "block";
+            loader.style.display = "block";
         }
     } catch (error) {
         iziToast.error({
@@ -108,7 +109,5 @@ loadMoreBtn.addEventListener("click", async () => {
             message: "Something went wrong! Please try again.",
             position: "topRight",
         });
-    } finally {
-        loader.style.display = "none";
-    }
+    } 
 });
