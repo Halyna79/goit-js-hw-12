@@ -34,10 +34,9 @@ searchForm.addEventListener("submit", async (event) => {
     page = 1;
     gallery.innerHTML = "";
     loadMoreBtn.hidden = true;
-    loader.hidden = false;
+    loader.hidden = true;
 
     try {
-        loadMoreBtn.hidden = false;
         const data = await fetchImages(query, page, perPage);
         totalHits = data.totalHits;
 
@@ -53,12 +52,13 @@ searchForm.addEventListener("submit", async (event) => {
         lightbox.refresh();
         searchForm.reset();
 
-        if (data.hits.length < perPage || page * perPage >= totalHits) {
+        if (page * perPage >= totalHits) {
             iziToast.info({
                 title: "End or collection",
                 message: "We're sorry, but you've reached the end of search results.",
                 position: "topRight",
             });
+            loadMoreBtn.hidden = true;
         } else {
             loadMoreBtn.hidden = false; 
         }
@@ -74,11 +74,19 @@ searchForm.addEventListener("submit", async (event) => {
 });
 
 loadMoreBtn.addEventListener("click", async () => {
+    if (page * perPage >= totalHits) {
+        iziToast.info({
+            title: "End or collection",
+            message: "We're sorry, but you've reached the end of search results.",
+            position: "topRight",
+        });
+        loadMoreBtn.hidden = true;
+        return;
+    }
     page++;
     loadMoreBtn.hidden = true;
     loader.hidden = false;
     try {
-        loader.hidden = false;
         const data = await fetchImages(query, page, perPage);
         if (data.hits.length === 0) {
             iziToast.info({
@@ -95,7 +103,7 @@ loadMoreBtn.addEventListener("click", async () => {
 
         const { height: cardHeight } = document.querySelector(".gallery").firstElementChild.getBoundingClientRect();
         window.scrollBy({
-            top: cardHeight * 2,
+            top: cardHeight * 5,
             behavior: "smooth"
         });
 
