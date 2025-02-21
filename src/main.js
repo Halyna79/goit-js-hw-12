@@ -8,13 +8,17 @@ import "simplelightbox/dist/simple-lightbox.min.css";
 const searchForm = document.querySelector('#search-form');
 const gallery = document.querySelector('.gallery');
 const loadMoreBtn = document.querySelector(".load-more");
+const loader = document.querySelector(".loader");
 
-loadMoreBtn.style.display = "none";
 
 let query = "";
 let page = 1;
 const perPage = 40;
+let totalHits = 0;
 let lightbox = new SimpleLightbox('.gallery a');
+
+loadMoreBtn.hidden = true;
+loader.hidden = true;
 
 searchForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -29,9 +33,14 @@ searchForm.addEventListener("submit", async (event) => {
     }
     page = 1;
     gallery.innerHTML = "";
-    loadMoreBtn.style.display = "none";
+    loadMoreBtn.hidden = true;
+    loader.hidden = false;
+
     try {
+        loadMoreBtn.hidden = false;
         const data = await fetchImages(query, page, perPage);
+        totalHits = data.totalHits;
+
         if (data.hits.length === 0) {
             iziToast.info({
                 title: "Info",
@@ -43,10 +52,15 @@ searchForm.addEventListener("submit", async (event) => {
         gallery.innerHTML = renderImages(data.hits);
         lightbox.refresh();
         searchForm.reset();
-        if (data.hits.length < perPage) {
-            loadMoreBtn.style.display = "none";
+
+        if (data.hits.length < perPage || page * perPage >= totalHits) {
+            iziToast.info({
+                title: "End or collection",
+                message: "We're sorry, but you've reached the end of search results.",
+                position: "topRight",
+            });
         } else {
-            loadMoreBtn.style.display = "block"; 
+            loadMoreBtn.hidden = false; 
         }
     } catch (error) {
         iziToast.error({
@@ -54,12 +68,17 @@ searchForm.addEventListener("submit", async (event) => {
             message: "Something went wrong! Please try again.",
             position: "topRight",
         });
+    } finally {
+        loader.hidden = true;
     }
 });
 
 loadMoreBtn.addEventListener("click", async () => {
-    page ++;
+    page++;
+    loadMoreBtn.hidden = true;
+    loader.hidden = false;
     try {
+        loader.hidden = false;
         const data = await fetchImages(query, page, perPage);
         if (data.hits.length === 0) {
             iziToast.info({
@@ -67,23 +86,28 @@ loadMoreBtn.addEventListener("click", async () => {
                 message: "No results found. Try another search query!",
                 position: "topRight",
             });
-            loadMoreBtn.style.display = "none";
+            loadMoreBtn.hidden = true;
             return;
         }
+
         gallery.insertAdjacentHTML("beforeend", renderImages(data.hits));
         lightbox.refresh();
-        const cardHeight = document.querySelector(".gallery a").getBoundingClientRect().height;
+
+        const { height: cardHeight } = document.querySelector(".gallery").firstElementChild.getBoundingClientRect();
         window.scrollBy({
             top: cardHeight * 2,
             behavior: "smooth"
         });
-        if (page * perPage >= data.totalHits) {
-            loadMoreBtn.style.display = "none";
+
+        if (page * perPage >= totalHits) {
             iziToast.info({
                 title: "End or collection",
                 message: "We're sorry, but you've reached the end of search results.",
                 position: "topRight",
             });
+            loadMoreBtn.hidden = true;
+        } else {
+            loadMoreBtn.hidden = false;
         }
     } catch (error) {
         iziToast.error({
@@ -91,5 +115,7 @@ loadMoreBtn.addEventListener("click", async () => {
             message: "Something went wrong! Please try again.",
             position: "topRight",
         });
+    } finally {
+        loader.hidden = true;
     }
 });
